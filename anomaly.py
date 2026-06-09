@@ -16,6 +16,8 @@ clock = pygame.time.Clock()
 # FONT
 font = pygame.font.SysFont(None, 60)
 small_font = pygame.font.SysFont(None, 35)
+heading_font = pygame.font.Font("assets/creepster.ttf", 70)
+end_font = pygame.font.Font("assets/lylas.ttf", 60)
 
 # COLORS (fallback UI)
 WHITE = (255, 255, 255)
@@ -24,7 +26,7 @@ GREEN = (0, 200, 0)
 RED = (200, 0, 0)
 
 # GAME STATES
-START, PLAYING, WIN, LOSE = "start", "play", "win", "lose"
+START, REFERENCE, PLAYING, WIN, LOSE = "start","reference", "play", "win", "lose"
 state = START
 
 # LOAD IMAGES
@@ -49,6 +51,9 @@ eye_img = pygame.transform.scale(eye_img, (WIDTH, HEIGHT))
 shadow_img = pygame.image.load("assets/shadow.jpeg")
 shadow_img = pygame.transform.scale(shadow_img, (WIDTH, HEIGHT))
 
+duck_img = pygame.image.load("assets/duck.jpeg")
+duck_img = pygame.transform.scale(duck_img, (WIDTH, HEIGHT))
+
 start_bg = pygame.image.load("assets/start_screen.jpg")
 start_bg = pygame.transform.scale(start_bg, (WIDTH, HEIGHT))
 
@@ -63,9 +68,6 @@ pygame.mixer.music.load("assets/music.mp3")
 pygame.mixer.music.set_volume(0.4)
 pygame.mixer.music.play(-1)
 
-#LOAD FONT
-heading_font = pygame.font.Font("assets/creepster.ttf", 60)
-end_font = pygame.font.Font("assets/lylas.ttf", 60)
 # PLAYER
 player_x, player_y = WIDTH / 6, HEIGHT - 300
 speed = 5
@@ -80,7 +82,8 @@ anomalies = [
     "light",
     "slow",
     "eye",
-    "shadow"
+    "shadow",
+    "duck"
 ]
 
 room_has_anomaly = False
@@ -107,7 +110,7 @@ def generate_room():
 generate_room()
 
 # BUTTON
-start_btn = pygame.Rect(350, 280, 200, 80)
+start_btn = pygame.Rect(350, 320, 200, 70)
 restart_btn = pygame.Rect(320, 340, 250, 60)
 
 # DRAW ROOM
@@ -131,6 +134,9 @@ def draw_room():
 
     elif current_anomaly == "shadow":
         screen.blit(shadow_img, (0, 0))
+
+    elif current_anomaly == "duck":
+        screen.blit(duck_img, (0, 0))
 
     elif current_anomaly == "slow":
         global speed
@@ -204,6 +210,12 @@ while running:
         if state == START:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn.collidepoint(event.pos):
+                    state = REFERENCE
+        
+        elif state == REFERENCE:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    generate_room()
                     state = PLAYING
         
         elif state == WIN or state == LOSE:
@@ -229,12 +241,23 @@ while running:
         screen.blit(start_bg, (0, 0))
         screen.blit(overlay, (0, 0))
 
-        title = heading_font.render("BUNKER ANOMALY ESCAPE", True, WHITE)
-        screen.blit(title, (160, 190))
+        title = heading_font.render("BUNKER ANOMALY ESCAPE", True, "#E8DCAB")
+        screen.blit(title, (150, 190))
 
         pygame.draw.rect(screen, BLACK, start_btn)
-        screen.blit(font.render("START", True, WHITE), (385, 295))
+        screen.blit(font.render("START", True, "#E8DCAB"), (385, 335))
 
+    elif state == REFERENCE:
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.set_alpha(100)
+        overlay.fill((0, 0, 0))
+        screen.blit(bunker_bg, (0, 0))
+        screen.blit(overlay, (0, 0))
+        text = font.render("MEMORIZE THIS ROOM", True, "#E8DCAB")
+        screen.blit(text, (185, 190))
+        space = small_font.render("Press SPACE when ready", True, "#E8DCAB")
+        screen.blit(space, (280, 250))
+    
     elif state == PLAYING:
         draw_room()
 
@@ -255,7 +278,7 @@ while running:
         text = end_font.render("YOU ESCAPED!", True, WHITE)
         screen.blit(text, (270, 250))
 
-        pygame.draw.rect(screen, WHITE, restart_btn)
+        pygame.draw.rect(screen, "#C5C6C7", restart_btn)
         restart_text = small_font.render("PLAY AGAIN", True, BLACK)
         screen.blit(restart_text, (370, 360))
 
@@ -265,14 +288,14 @@ while running:
         overlay.fill((0, 0, 0))
         screen.blit(lose_bg, (0, 0))
         screen.blit(overlay, (0, 0))
-        text = end_font.render("YOU LOST", True, WHITE)
-        score_text = small_font.render(f"Score: {score}/5", True, WHITE)
+        text = end_font.render("YOU LOST", True, "#E8DCAB")
+        score_text = small_font.render(f"Score: {score}/5", True, "#E8DCAB")
         screen.blit(text, (320, 210))
         screen.blit(score_text, (380, 280))
 
         pygame.draw.rect(screen, BLACK, restart_btn)
         restart_text = small_font.render(
-            "PLAY AGAIN", True, WHITE
+            "PLAY AGAIN", True, "#E8DCAB"
         )
         screen.blit(restart_text, (370, 360))
 
